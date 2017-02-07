@@ -1,0 +1,14 @@
+swagger:
+  base:
+    package: com.example
+  api:
+    title: Example for Sovrn
+    description: Example for Sovrn
+    version: "@project.version@"
+    termsOfServiceUrl: http://swagger.io
+    contact: nowhere@nowhere.com
+    license: NONE 
+    licenseUrl: https://en.wikipedia.org/wiki/Proprietary_software
+management:
+  security:  
+    enabled: false
