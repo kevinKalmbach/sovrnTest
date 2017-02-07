@@ -17,28 +17,28 @@ import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Repository;
 
 import com.example.domain.AdRequest;
-import com.example.domain.Partner;
-import com.example.domain.PartnerResponse;
+import com.example.domain.Provider;
+import com.example.domain.ProviderResponse;
 
 import rx.Emitter;
 import rx.Emitter.BackpressureMode;
 import rx.Observable;
 
 @Repository
-public class PartnerDalImpl implements PartnerDal {
-	private static final Logger LOGGER = LoggerFactory.getLogger(PartnerDalImpl.class);
+public class ProviderDalImpl implements ProviderDal {
+	private static final Logger LOGGER = LoggerFactory.getLogger(ProviderDalImpl.class);
 	private final String statement = "select url,provider_name,provider_id from provider where provider_id in (select provider_id from provider_size_assoc where ad_size_id IN (select ad_size_id from ad_size where width=? and height=?)) and provider_id in (select provider_id from user_provider_assoc where user_id=?)";
 	private JdbcTemplate template;
 	private Validator validator;
 
-	public PartnerDalImpl(DataSource dataSource, Validator validator) {
+	public ProviderDalImpl(DataSource dataSource, Validator validator) {
 		template = new JdbcTemplate(dataSource);
 		this.validator = validator;
 	}
 
-	private Partner createFromRow(ResultSet rs) throws SQLException, ConstraintViolationException {
-		Partner p =  Partner.builder().url(rs.getString(1)).partnerId(rs.getInt(3)).build();
-		 Set<ConstraintViolation<Partner>> violations = validator.validate(p);
+	private Provider createFromRow(ResultSet rs) throws SQLException, ConstraintViolationException {
+		Provider p =  Provider.builder().url(rs.getString(1)).providerId(rs.getInt(3)).build();
+		 Set<ConstraintViolation<Provider>> violations = validator.validate(p);
 		 if (!violations.isEmpty())
 		 {
 			 LOGGER.info("constraint violations");
@@ -48,7 +48,7 @@ public class PartnerDalImpl implements PartnerDal {
 
 	}
 
-	private void selectFromDb(Emitter<Partner> e, AdRequest request) {
+	private void selectFromDb(Emitter<Provider> e, AdRequest request) {
 		PreparedStatementSetter pss = ps -> {
 			ps.setInt(1, request.getHeight());
 			ps.setInt(2, request.getWidth());
@@ -66,7 +66,7 @@ public class PartnerDalImpl implements PartnerDal {
 	}
 
 	@Override
-	public Observable<Partner> getPartners(AdRequest request) {
+	public Observable<Provider> getProviders(AdRequest request) {
 		return Observable.fromEmitter(emitter -> selectFromDb(emitter, request), BackpressureMode.BUFFER);
 
 	}

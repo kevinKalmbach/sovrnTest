@@ -11,7 +11,7 @@ import com.example.domain.AdRequest;
 import com.example.domain.Bid;
 import com.example.domain.HistoryCache;
 import com.example.domain.HistoryEntry;
-import com.example.domain.PartnerResponse;
+import com.example.domain.ProviderResponse;
 
 import rx.Observable;
 
@@ -35,10 +35,10 @@ public class HistoryServiceImpl implements HistoryService {
 
 	// Should synchronize this (or not store it in a memory cache)
 	@Override
-	public void store(AdRequest request, PartnerResponse pr) {
+	public void store(AdRequest request, ProviderResponse pr) {
 		String key = request.getTid();
 		LOGGER.info("storing a bid {}", pr);
-		Bid bid = Bid.builder().providerId(pr.getPartnerId()).bidPrice(pr.getBidprice()).build();
+		Bid bid = Bid.builder().providerId(pr.getProviderId()).bidPrice(pr.getBidprice()).build();
 		HistoryEntry entry = getHistoryEntry(request);
 		entry = entry.toBuilder().bid(bid).build();
 		cache.put(key, entry);
@@ -46,11 +46,11 @@ public class HistoryServiceImpl implements HistoryService {
 
 	// Should synchronize this (or not store it in a memory cache)
 	@Override
-	public void storeWinningBid(AdRequest request, PartnerResponse pr) {
+	public void storeWinningBid(AdRequest request, ProviderResponse pr) {
 		String key = request.getTid();
 		LOGGER.info("storing a winning bid {}", pr);
 		HistoryEntry entry = getHistoryEntry(request);
-		entry = entry.toBuilder().winningPrice(pr.getBidprice()).winningProvider(pr.getPartnerId()).startTime(System.currentTimeMillis()).build();
+		entry = entry.toBuilder().winningPrice(pr.getBidprice()).winningProvider(pr.getProviderId()).startTime(System.currentTimeMillis()).build();
 		cache.put(key, entry);
 
 	}

@@ -18,16 +18,16 @@ import lombok.Value;
 @Value
 @Builder(buildMethodName = "nonValidatedBuild", toBuilder=true)
 @JsonInclude(Include.NON_EMPTY)
-@JsonDeserialize(builder = PartnerResponse.PartnerResponseBuilder.class)
+@JsonDeserialize(builder = ProviderResponse.ProviderResponseBuilder.class)
 @Immutable
-public class PartnerResponse {
-	private int partnerId;
+public class ProviderResponse {
+	private int providerId;
 	@BidPriceConstraint
 	private BigDecimal bidprice;
 	@SafeHtml
 	private String adhtml;
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
-	public static final class PartnerResponseBuilder extends GenericBuilder<PartnerResponse> {
+	public static final class ProviderResponseBuilder extends GenericBuilder<ProviderResponse> {
 	}
 }

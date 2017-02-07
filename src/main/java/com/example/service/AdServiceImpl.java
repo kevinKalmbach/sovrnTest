@@ -7,35 +7,35 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.example.dal.CallToPartner;
-import com.example.dal.CallToPartnerImpl;
-import com.example.dal.PartnerDal;
+import com.example.dal.CallToProvider;
+import com.example.dal.CallToProviderImpl;
+import com.example.dal.ProviderDal;
 import com.example.domain.AdRequest;
 import com.example.domain.AdResponse;
-import com.example.domain.Partner;
-import com.example.domain.PartnerRequest;
-import com.example.domain.PartnerResponse;
+import com.example.domain.Provider;
+import com.example.domain.ProviderRequest;
+import com.example.domain.ProviderResponse;
 
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
 @Service
 public class AdServiceImpl implements AdService {
-	private static final Logger LOGGER = LoggerFactory.getLogger(CallToPartnerImpl.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(CallToProviderImpl.class);
 
-	private final PartnerDal partnerDal;
-	private final CallToPartner callPartner;
+	private final ProviderDal providerDal;
+	private final CallToProvider callProvider;
 	private final HistoryService historyService;
 
-	public AdServiceImpl(PartnerDal pd, CallToPartner call, HistoryService historyService) {
-		this.partnerDal = pd;
-		this.callPartner = call;
+	public AdServiceImpl(ProviderDal pd, CallToProvider call, HistoryService historyService) {
+		this.providerDal = pd;
+		this.callProvider = call;
 		this.historyService = historyService;
 	}
 
-	private PartnerResponse pickHighestAndStoreHistory(Object a[], AdRequest request) {
+	private ProviderResponse pickHighestAndStoreHistory(Object a[], AdRequest request) {
 		LOGGER.info("going to get highest");
-		PartnerResponse highest = Arrays.stream(a).filter(Objects::nonNull).map(o -> (PartnerResponse) o).
+		ProviderResponse highest = Arrays.stream(a).filter(Objects::nonNull).map(o -> (ProviderResponse) o).
 				peek(pr -> historyService.store(request,pr)).
 				reduce(null,
 				(h, pr) -> h == null || h.getBidprice().compareTo(pr.getBidprice()) == -1 ? pr : h);
@@ -45,18 +45,18 @@ public class AdServiceImpl implements AdService {
 
 	}
 
-	private AdResponse mapToAdResponse(AdRequest request, PartnerResponse pr) {
+	private AdResponse mapToAdResponse(AdRequest request, ProviderResponse pr) {
 		return AdResponse.builder().tid(request.getTid()).html(pr.getAdhtml()).build();
 
 	}
 
 	@Override
 	public Observable<AdResponse> getAd(AdRequest request) {
-		PartnerRequest pr = PartnerRequest.builder().width(request.getWidth()).height(request.getHeight())
+		ProviderRequest pr = ProviderRequest.builder().width(request.getWidth()).height(request.getHeight())
 				.domain(request.getDomain()).userip(request.getUserip()).useragent(request.getUserAgent()).build();
 
-		Observable<Partner> partners = partnerDal.getPartners(request).doOnNext(p -> LOGGER.info("got a partner {}", p));
-		Observable<Observable<PartnerResponse>> responses = partners.map(p -> callPartner.callpartner(p, pr)).doOnNext(pp -> LOGGER.info("got a partner response {}", pp));
+		Observable<Provider> providers = providerDal.getProviders(request).doOnNext(p -> LOGGER.info("got a provider {}", p));
+		Observable<Observable<ProviderResponse>> responses = providers.map(p -> callProvider.callProvider(p, pr)).doOnNext(pp -> LOGGER.info("got a provider response {}", pp));
 		return Observable.zip(responses, a -> pickHighestAndStoreHistory(a,request)).filter(Objects::nonNull).map(l -> mapToAdResponse(request, l))
 				.observeOn(Schedulers.io());
 	}
