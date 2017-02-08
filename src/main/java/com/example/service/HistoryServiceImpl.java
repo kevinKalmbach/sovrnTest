@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.example.config.AppProperties;
@@ -42,6 +43,7 @@ public class HistoryServiceImpl implements HistoryService {
 
 	// Should synchronize this (or not store it in a memory cache)
 	@Override
+	@Async
 	public void store(AdRequest request, ProviderResponse pr) {
 		String key = request.getTid();
 		LOGGER.info("storing a bid {}", pr);
@@ -57,6 +59,7 @@ public class HistoryServiceImpl implements HistoryService {
 
 	// Should synchronize this (or not store it in a memory cache)
 	@Override
+	@Async
 	public void storeWinningBid(AdRequest request, ProviderResponse pr) {
 		String key = request.getTid();
 		LOGGER.info("storing a winning bid {}", pr);
