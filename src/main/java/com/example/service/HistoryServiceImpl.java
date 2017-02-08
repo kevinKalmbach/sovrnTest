@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.example.config.AppProperties;
 import com.example.domain.AdRequest;
 import com.example.domain.Bid;
 import com.example.domain.HistoryCache;
@@ -19,7 +20,13 @@ import rx.Observable;
 public class HistoryServiceImpl implements HistoryService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(HistoryService.class);
 	private HistoryCache cache = new HistoryCache(100);
-	private long clickTimer = 10;// 10 seconds
+	private long clickTimer;
+
+	HistoryServiceImpl(AppProperties props) {
+		this.clickTimer = props.getClickTimer();
+		LOGGER.info("Setting clicktimer to {}", clickTimer);
+	}
+
 	private HistoryEntry getHistoryEntry(int userId, String key) {
 		if (!cache.containsKey(key)) {
 			HistoryEntry entry = HistoryEntry.builder().tid(key).userid(userId).build();
@@ -50,7 +57,8 @@ public class HistoryServiceImpl implements HistoryService {
 		String key = request.getTid();
 		LOGGER.info("storing a winning bid {}", pr);
 		HistoryEntry entry = getHistoryEntry(request);
-		entry = entry.toBuilder().winningPrice(pr.getBidprice()).winningProvider(pr.getProviderId()).startTime(System.currentTimeMillis()).build();
+		entry = entry.toBuilder().winningPrice(pr.getBidprice()).winningProvider(pr.getProviderId())
+				.startTime(System.currentTimeMillis()).build();
 		cache.put(key, entry);
 
 	}
@@ -63,15 +71,15 @@ public class HistoryServiceImpl implements HistoryService {
 		cache.put(tid, entry);
 		return Observable.just(tid);
 	}
-	
+
 	private HistoryEntry fillInClick(HistoryEntry entry) {
 		if (entry.getClickResult() != null) {
 			return entry;
 		}
 		long now = System.currentTimeMillis();
 		long delta = now - entry.getStartTime();
-		//Convert seconds to millis
-		String result = delta > clickTimer*1000 ? "STALE" : "REQUEST";
+		// Convert seconds to millis
+		String result = delta > clickTimer * 1000 ? "STALE" : "REQUEST";
 		return entry.toBuilder().clickResult(result).build();
 	}
 
@@ -79,7 +87,5 @@ public class HistoryServiceImpl implements HistoryService {
 	public Observable<Collection<HistoryEntry>> getHistory() {
 		return Observable.just(cache.values().stream().map(e -> fillInClick(e)).collect(Collectors.toList()));
 	}
-	
-	
 
 }

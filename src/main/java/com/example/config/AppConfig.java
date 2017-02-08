@@ -11,6 +11,15 @@ public class AppConfig {
 	@Bean
 	 public RestTemplate restTemplate() {
 		    return new RestTemplate();
-		  }
+    }
+	
+	@Bean
+	public AppProperties appProperties() {
+		return new AppProperties();
+	}
+	@Bean
+	public DBProperties dbProperties() {
+		return new DBProperties();
+	}
 
 }

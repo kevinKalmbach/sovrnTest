@@ -69,7 +69,7 @@ public class CallToProviderImpl implements CallToProvider {
 	@Override
 	public Observable<ProviderResponse> callProvider(Provider p, ProviderRequest request) {
 		return Observable.defer(() -> getObservable(p,request).timeout(200, TimeUnit.MILLISECONDS))
-				.onErrorResumeNext(t -> {LOGGER.info("error calling a provider, ignoring it", t); return Observable.empty();});
+				.onErrorResumeNext(t -> {LOGGER.info("error calling a provider, ignoring it", t); return Observable.just(null);});
 	}
 
 }
