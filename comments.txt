@@ -1,0 +1,30 @@
+Security
+--------
+Currently any user can all the "ad" endpoint and get back a tid which can then be used to call click.
+This opens a security hole.
+
+There are several ways to mitigate this.  one such way is to have the service that initially generates the request, create a signed request that includes the userid, tid, url, etc.
+This signature then must accompany all requests (/ad and /click).  End users could not generate new requests and since the tid is part of the signature, it would be easy to trap replays attacks.
+
+
+
+Database
+--------
+It seems apparent (but not explicitly stated) that this is a shared database.  (The schema is predefined, no mention of crud operation in the service, etc).  This violates one of the main tenets of services, owning your own data.
+
+
+Problems With The Assignment
+----------------------------
+One problem with the assignment (as given) is in the sql to create the schema.  For the provider table, the sql is:
+CREATE TABLE `provider` (
+  `provider_id` INT NOT NULL,
+  `provider_name` varchar(64) NOT NULL UNIQUE,
+  `url` varchar(512) NOT NULL AUTO_INCREMENT UNIQUE,
+  PRIMARY KEY (`provider_id`)
+);
+
+But you cannot have a string field be auto_increment (and it does not make any sense in this case).
+Removing this allows the sql to be ran.
+
+I would also suggest putting auto_increment in all the primary key columns.
+
