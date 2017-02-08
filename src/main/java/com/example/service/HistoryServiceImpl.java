@@ -45,6 +45,10 @@ public class HistoryServiceImpl implements HistoryService {
 	public void store(AdRequest request, ProviderResponse pr) {
 		String key = request.getTid();
 		LOGGER.info("storing a bid {}", pr);
+		if (pr == null) {
+			LOGGER.warn("Not storing null response");
+			return;
+		}
 		Bid bid = Bid.builder().providerId(pr.getProviderId()).bidPrice(pr.getBidprice()).build();
 		HistoryEntry entry = getHistoryEntry(request);
 		entry = entry.toBuilder().bid(bid).build();
@@ -56,6 +60,10 @@ public class HistoryServiceImpl implements HistoryService {
 	public void storeWinningBid(AdRequest request, ProviderResponse pr) {
 		String key = request.getTid();
 		LOGGER.info("storing a winning bid {}", pr);
+		if (pr == null) {
+			LOGGER.warn("Not storing null winner");
+			return;
+		}
 		HistoryEntry entry = getHistoryEntry(request);
 		entry = entry.toBuilder().winningPrice(pr.getBidprice()).winningProvider(pr.getProviderId())
 				.startTime(System.currentTimeMillis()).build();
@@ -66,6 +74,10 @@ public class HistoryServiceImpl implements HistoryService {
 	// Should synchronize this (or not store it in a memory cache)
 	@Override
 	public Observable<String> storeClick(int userId, String tid) {
+		if (tid == null) {
+			LOGGER.warn("Not storing null click");
+			return Observable.just(tid);
+		}
 		HistoryEntry entry = getHistoryEntry(userId, tid);
 		entry = entry.toBuilder().clickResult("CLICK").build();
 		cache.put(tid, entry);

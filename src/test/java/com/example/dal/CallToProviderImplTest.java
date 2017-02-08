@@ -1,6 +1,9 @@
 package com.example.dal;
 
 import static org.junit.Assert.assertEquals;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withBadRequest;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -10,16 +13,13 @@ import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
+import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
 import com.example.constraint.ValidationTestUtils;
@@ -30,30 +30,32 @@ import rx.Observable;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CallToProviderImplTest {
-	private static final String URL = "http://test1.com";
-
-	@Mock
-	RestTemplate restTemplate;
+	private static final String URL = "http://test1.com/whatever";
+	private static final String BAD_URL = "http://test1.com/whatever2";
 
 	@Mock
 	Validator validator = ValidationTestUtils.getValidator();
 
-	@InjectMocks
 	CallToProviderImpl callToProvider;
 
+	private RestTemplate setupRestTemplate() {
+		RestTemplate restTemplate = new RestTemplate();
+		MockRestServiceServer mockServer = MockRestServiceServer.createServer(restTemplate);
+
+		mockServer.expect(requestTo(URL))
+		  .andRespond(withSuccess("{ \"bidprice\" : 1.0, \"adhtml\" : \"html\" }", org.springframework.http.MediaType.APPLICATION_JSON));
+		mockServer.expect(requestTo(BAD_URL))
+		  .andRespond(withBadRequest());
+		return restTemplate;
+	}
+	
+	@Before
+	public void setup() {
+		callToProvider = new CallToProviderImpl(setupRestTemplate(), validator);
+	}
+	
 	private ProviderResponse goodProviderResponse() {
 		return ProviderResponse.builder().bidprice(new BigDecimal("1.0")).adhtml("html").build();
-	}
-
-	private ResponseEntity<ProviderResponse> goodResponse() {
-		ResponseEntity<ProviderResponse> response = new ResponseEntity<ProviderResponse>(goodProviderResponse(),
-				HttpStatus.OK);
-		return response;
-	}
-	private ResponseEntity<ProviderResponse> badResponse() {
-		ResponseEntity<ProviderResponse> response = new ResponseEntity<ProviderResponse>(goodProviderResponse(),
-				HttpStatus.INTERNAL_SERVER_ERROR);
-		return response;
 	}
 
 	private Set<ConstraintViolation<Object>> getConstraintViolation() {
@@ -66,8 +68,8 @@ public class CallToProviderImplTest {
 
 	@Test
 	public void goodResult() {
-		Mockito.when(restTemplate.exchange(Mockito.eq(URL), Mockito.eq(HttpMethod.POST),
-				Mockito.any(RequestEntity.class), Mockito.eq(ProviderResponse.class))).thenReturn(goodResponse());
+//		Mockito.when(restTemplate.exchange(Mockito.eq(URL), Mockito.eq(HttpMethod.POST),
+//				Mockito.any(RequestEntity.class), Mockito.eq(ProviderResponse.class))).thenReturn(goodResponse());
 		Mockito.when(validator.validate(Mockito.any())).thenReturn(Collections.emptySet());
 		Provider p = Provider.builder().url(URL).build();
 		Observable<ProviderResponse> x = callToProvider.callProvider(p, null);
@@ -77,8 +79,6 @@ public class CallToProviderImplTest {
 
 	@Test
 	public void constraintViolation() {
-		Mockito.when(restTemplate.exchange(Mockito.eq(URL), Mockito.eq(HttpMethod.POST),
-				Mockito.any(RequestEntity.class), Mockito.eq(ProviderResponse.class))).thenReturn(goodResponse());
 		Mockito.when(validator.validate(Mockito.any())).thenReturn(getConstraintViolation());
 		Provider p = Provider.builder().url(URL).build();
 		Observable<ProviderResponse> x = callToProvider.callProvider(p, null);
@@ -90,10 +90,9 @@ public class CallToProviderImplTest {
 
 	@Test
 	public void invalidResponse() {
-		Mockito.when(restTemplate.exchange(Mockito.eq(URL), Mockito.eq(HttpMethod.POST),
-				Mockito.any(RequestEntity.class), Mockito.eq(ProviderResponse.class))).thenReturn(badResponse());
+		
 		Mockito.when(validator.validate(Mockito.any())).thenReturn(Collections.emptySet());
-		Provider p = Provider.builder().url(URL).build();
+		Provider p = Provider.builder().url(BAD_URL).build();
 		Observable<ProviderResponse> x = callToProvider.callProvider(p, null);
 		//Since we hit a constraint violation, this better return null
 		ProviderResponse pr = x.toBlocking().first();

@@ -37,7 +37,7 @@ public class HistoryServiceImplTest {
 		assertTrue(isInHstory(hs, r.getTid()));		
 	}
 	@Test
-	public void EvictionTest() {
+	public void evictionTest() {
 		AppProperties props = Mockito.mock(AppProperties.class);
 		Mockito.when(props.getClickTimer()).thenReturn(100);
 		HistoryServiceImpl hs = new HistoryServiceImpl(props);
@@ -55,7 +55,18 @@ public class HistoryServiceImplTest {
 		
 		//Now it should be gone
 		assertFalse(isInHstory(hs, originalRequest.getTid()));
+	}
+	
+	@Test
+	public void testNulls() {
+		AppProperties props = Mockito.mock(AppProperties.class);
+		Mockito.when(props.getClickTimer()).thenReturn(100);
+		HistoryServiceImpl hs = new HistoryServiceImpl(props);
+		AdRequest r = getNewAdRequest();		
 
+		hs.store(r, null);
+		hs.storeWinningBid(r, null);
+		hs.storeClick(11, null);
 	}
 
 	
