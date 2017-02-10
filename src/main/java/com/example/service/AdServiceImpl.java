@@ -55,7 +55,10 @@ public class AdServiceImpl implements AdService {
 		ProviderRequest pr = ProviderRequest.builder().width(request.getWidth()).height(request.getHeight())
 				.domain(request.getDomain()).userip(request.getUserip()).useragent(request.getUserAgent()).build();
 
-		Observable<Provider> providers = providerDal.getProviders(request).doOnNext(p -> LOGGER.info("got a provider {}", p));
+//		Observable<Provider> providers = providerDal.getProviders(request).doOnNext(p -> LOGGER.info("got a provider {}", p));
+		Observable<Provider> providers = new GetProviderFromDBCmd(providerDal, request).toObservable();
+
+		
 		Observable<Observable<ProviderResponse>> responses = providers.map(p -> callProvider.callProvider(p, pr)).doOnNext(pp -> LOGGER.info("got a provider response {}", pp));
 		return Observable.zip(responses, a -> pickHighestAndStoreHistory(a,request)).filter(Objects::nonNull).map(l -> mapToAdResponse(request, l))
 				.observeOn(Schedulers.io());

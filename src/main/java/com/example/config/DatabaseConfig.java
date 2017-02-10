@@ -24,12 +24,12 @@ public class DatabaseConfig {
 		    ds.setMaxIdle(props.getMaxIdle());
 		    ds.setMaxActive(props.getMaxActive());
 		    ds.setValidationQuery(props.getValidation());
-		    ds.setTimeBetweenEvictionRunsMillis(30000);
+		    ds.setTimeBetweenEvictionRunsMillis(5000);
 		    ds.setMaxWait(props.getMaxWait());
 		    ds.setMinEvictableIdleTimeMillis(30000);
 		    ds.setLogAbandoned(true);
 		    ds.setTestWhileIdle(true);
-		    ds.setValidationInterval(300000);
+		    ds.setValidationInterval(3000);
 		    // Prime the pump
 		    try {
 		      ds.createPool();
