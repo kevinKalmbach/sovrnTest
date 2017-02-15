@@ -8,6 +8,7 @@ import javax.annotation.concurrent.Immutable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import lombok.Builder;
 import lombok.Singular;
@@ -22,6 +23,7 @@ public class HistoryEntry {
 	private int userid;
 	@Singular
 	private List<Bid> bids;
+	@JsonSerialize(using =BigDecimalSerializer.class)
 	private BigDecimal winningPrice;
 	private int winningProvider;
 	private String clickResult;
