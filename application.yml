@@ -1,0 +1,9 @@
+hystrix:
+  command:
+    GetProviderFromDB:
+      execution:
+        isolation:
+          semaphore:
+            maxConcurrentRequests: 4
+CLICKTIMER: "6"
+huh.clicktimer: "6"
