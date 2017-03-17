@@ -1,11 +1,11 @@
 package com.example.service;
-import static org.junit.Assert.assertEquals;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
-
+import com.example.dal.CallToProvider;
+import com.example.dal.ProviderDal;
+import com.example.domain.AdRequest;
+import com.example.domain.AdResponse;
+import com.example.domain.Provider;
+import com.example.domain.ProviderResponse;
+import com.google.common.primitives.Ints;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.Before;
@@ -15,16 +15,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
-
-import com.example.dal.CallToProvider;
-import com.example.dal.ProviderDal;
-import com.example.domain.AdRequest;
-import com.example.domain.AdResponse;
-import com.example.domain.Provider;
-import com.example.domain.ProviderResponse;
-import com.google.common.primitives.Ints;
-
 import rx.Observable;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.assertEquals;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AdServiceImplTest {
@@ -81,8 +79,10 @@ public class AdServiceImplTest {
 	}
 	public void setupProviderDal(int ... desiredProviders) {
 		List<Provider> ret = Ints.asList(desiredProviders).stream().map(i -> Provider.builder().providerId(i).url("http://").build()).collect(Collectors.toList());		
-		Mockito.when(pd.getProviders(Mockito.any())).thenReturn(Observable.from(ret));
-		
+		Mockito.when(pd.getProvidersObs(Mockito.any())).thenReturn(Observable.from(ret));
+		Mockito.when(pd.getProviders(Mockito.any())).thenReturn(ret);
+
+
 	}
 
 	@Test

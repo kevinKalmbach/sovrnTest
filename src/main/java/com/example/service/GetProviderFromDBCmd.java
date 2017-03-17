@@ -1,21 +1,20 @@
 package com.example.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.example.dal.ProviderDal;
 import com.example.domain.AdRequest;
 import com.example.domain.Provider;
+import com.netflix.hystrix.HystrixCommand;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixCommandKey;
-import com.netflix.hystrix.HystrixObservableCommand;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import rx.Observable;
+import java.util.List;
 
-public class GetProviderFromDBCmd extends HystrixObservableCommand<Provider> {
+public class GetProviderFromDBCmd extends HystrixCommand<List<Provider>> {
 	  private static final Logger LOGGER = LoggerFactory.getLogger(GetProviderFromDBCmd.class);
 
-	  private static final Setter SETTER = Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("ProviderCommands"))
+	  private static final HystrixCommand.Setter SETTER = Setter.withGroupKey(HystrixCommandGroupKey.Factory.asKey("ProviderCommands"))
 	      .andCommandKey(HystrixCommandKey.Factory.asKey("GetProviderFromDB"));
 
 	    private final ProviderDal dal;
@@ -29,15 +28,14 @@ public class GetProviderFromDBCmd extends HystrixObservableCommand<Provider> {
 	    }
 
 	    @Override
-	    protected Observable<Provider> construct() {
-	      return dal.getProviders(request)
-	          .doOnError(i -> LOGGER.info("Error in db: {}", i.toString()));
+	    protected List<Provider> run() {
+	      return dal.getProviders(request);
 	    }
 
 	    @Override
-	    protected Observable<Provider> resumeWithFallback() {
-	      LOGGER.info("In resumeWithFallback");
-	      return new HardcodedProviderCommand(request).toObservable();
+	    protected List<Provider> getFallback() {
+	      LOGGER.info("In fallback");
+	      return new HardcodedProviderCommand(request).execute();
 	    }
 	}
 

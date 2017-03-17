@@ -61,3 +61,5 @@ bin/
 docs/generated/
 /.apt_generated/
 .factorypath
+
+.idea

@@ -20,7 +20,7 @@ public class ProviderIdConstraintTest {
 	}
 
 	public void testIds(int[] ids, int errors) {
-		Ints.asList(ids).stream().map(i -> new TestClass(i))
+		Ints.asList(ids).stream().map(TestClass::new)
 				.forEach(o -> ValidationTestUtils.assertNumberOfViolationsOnObject(o, errors));
 	}
 

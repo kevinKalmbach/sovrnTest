@@ -1,21 +1,15 @@
 package com.example.service;
 
-import java.util.Collection;
-import java.util.stream.Collectors;
-
+import com.example.config.AppProperties;
+import com.example.domain.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-
-import com.example.config.AppProperties;
-import com.example.domain.AdRequest;
-import com.example.domain.Bid;
-import com.example.domain.HistoryCache;
-import com.example.domain.HistoryEntry;
-import com.example.domain.ProviderResponse;
-
 import rx.Observable;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Service
 public class HistoryServiceImpl implements HistoryService {
@@ -100,7 +94,7 @@ public class HistoryServiceImpl implements HistoryService {
 
 	@Override
 	public Observable<Collection<HistoryEntry>> getHistory() {
-		return Observable.just(cache.values().stream().map(e -> fillInClick(e)).collect(Collectors.toList()));
+		return Observable.just(cache.values().stream().map(this::fillInClick).collect(Collectors.toList()));
 	}
 
 }

@@ -1,23 +1,18 @@
 package com.example.service;
 
-import java.util.Arrays;
-import java.util.Objects;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
 import com.example.dal.CallToProvider;
 import com.example.dal.CallToProviderImpl;
 import com.example.dal.ProviderDal;
-import com.example.domain.AdRequest;
-import com.example.domain.AdResponse;
-import com.example.domain.Provider;
-import com.example.domain.ProviderRequest;
-import com.example.domain.ProviderResponse;
-
+import com.example.domain.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import rx.Observable;
 import rx.schedulers.Schedulers;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 public class AdServiceImpl implements AdService {
@@ -55,10 +50,14 @@ public class AdServiceImpl implements AdService {
 		ProviderRequest pr = ProviderRequest.builder().width(request.getWidth()).height(request.getHeight())
 				.domain(request.getDomain()).userip(request.getUserip()).useragent(request.getUserAgent()).build();
 
-//		Observable<Provider> providers = providerDal.getProviders(request).doOnNext(p -> LOGGER.info("got a provider {}", p));
-		Observable<Provider> providers = new GetProviderFromDBCmd(providerDal, request).toObservable();
+//		Observable<Provider> providers = providerDal.getProvidersObs(request).doOnNext(p -> LOGGER.info("got a provider {}", p));
+//		Observable<Provider> providers = new GetProviderFromDBObsCmd(providerDal, request).toObservable();
+		// List<Provider> providerList = providerDal.getProviders(request);
+		List<Provider> providerList = new GetProviderFromDBCmd(providerDal, request).execute();
 
-		
+
+
+		Observable<Provider> providers = Observable.from(providerList);
 		Observable<Observable<ProviderResponse>> responses = providers.map(p -> callProvider.callProvider(p, pr)).doOnNext(pp -> LOGGER.info("got a provider response {}", pp));
 		return Observable.zip(responses, a -> pickHighestAndStoreHistory(a,request)).filter(Objects::nonNull).map(l -> mapToAdResponse(request, l))
 				.observeOn(Schedulers.io());

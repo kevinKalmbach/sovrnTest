@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 
 import org.slf4j.Logger;
@@ -27,7 +28,7 @@ public class ControllerExceptionhandler {
 	 public List<String> getErrorResponseFromConstraintViolationException(ConstraintViolationException ex) {
 		   List<String> errorItems = ex.getConstraintViolations()
 		       .stream()
-		       .map(cv ->cv.getMessage() )
+		       .map(ConstraintViolation::getMessage )
 		       .collect(Collectors.toList());
 		   return errorItems;
 		 }

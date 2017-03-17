@@ -7,3 +7,9 @@ hystrix:
             maxConcurrentRequests: 4
 CLICKTIMER: "6"
 huh.clicktimer: "6"
+com:
+  example:
+    db:
+      user: root 
+      password: my-secret-pw 
+      url: jdbc:mysql://localhost:3306/sovrn 

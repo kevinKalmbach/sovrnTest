@@ -48,9 +48,8 @@ public class TidConstraintTest  {
 	@Test
 	public void testBadIds2() {
 		String badId = UUID.randomUUID().toString();
-		badId.replace('-', '!');
 		List<String> badIds = new ArrayList<>();
-		
+		badIds.add(	badId.replace('-', '!'));
 		testIds(badIds, 1);
 	}
 }

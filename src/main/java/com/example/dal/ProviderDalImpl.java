@@ -2,6 +2,8 @@ package com.example.dal;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import javax.sql.DataSource;
@@ -18,7 +20,6 @@ import org.springframework.stereotype.Repository;
 
 import com.example.domain.AdRequest;
 import com.example.domain.Provider;
-import com.example.domain.ProviderResponse;
 
 import rx.Emitter;
 import rx.Emitter.BackpressureMode;
@@ -65,10 +66,34 @@ public class ProviderDalImpl implements ProviderDal {
 		e.onCompleted();
 	}
 
+    private List<Provider> selectFromDb(AdRequest request) {
+	    List<Provider> ret = new ArrayList<>();
+        PreparedStatementSetter pss = ps -> {
+            ps.setInt(1, request.getHeight());
+            ps.setInt(2, request.getWidth());
+            ps.setInt(3, request.getUserid());
+        };
+        RowCallbackHandler rch = rs -> {
+            try {
+                ret.add(createFromRow(rs));
+            } catch (Throwable t) {
+                LOGGER.error("whatever", t);
+            }
+        };
+        template.query(statement, pss, rch);
+        return ret;
+	}
+
+
 	@Override
-	public Observable<Provider> getProviders(AdRequest request) {
+	public Observable<Provider> getProvidersObs(AdRequest request) {
 		return Observable.fromEmitter(emitter -> selectFromDb(emitter, request), BackpressureMode.BUFFER);
 
 	}
+
+    @Override
+    public List<Provider> getProviders(AdRequest request) {
+        return selectFromDb(request);
+    }
 
 }
